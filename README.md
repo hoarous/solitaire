@@ -32,4 +32,4 @@ https://random.dog/woof.json - returns a random dog image encapsulated in a json
 https://randomfox.ca/floof/ - returns a random fox image encapsulated in a json.
 
 #Database Schemas
-
+[sql schema](./assets/schema.sql)
