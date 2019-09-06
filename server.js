@@ -49,14 +49,20 @@ new CardFace('CLUBS', `https://random-d.uk/api/quack?type=jpg`, 'url');
 new CardFace('SPADES', `https://random.dog/woof.json `, 'url');
 new CardFace('DIAMONDS', `https://randomfox.ca/floof/ `, 'image');
 
-console.log(cardFaces);
-
 //TOPLEVEL FUNCTION CALLS: these are the functions called directly by express.
 
 //starts a new game
 //TODO: api call, initialize game
 function startGame(req,res){
-  res.send(new GameState(getDeck()));
+  getDeck()
+    .then(result => {
+      dealDeck(result);
+    })
+    .catch(err => handleError(err))
+    .then( result =>{
+      res.send(new GameState(result));
+    })
+    .catch(err => handleError(err));
 }
 
 //loads a saved game
@@ -75,14 +81,9 @@ function sendError(req,res){
 // DELETE THIS BEFORE FINAL VERSION!!!!!!!
 // this is just for testing.
 function test(req,res){
-  getDeck()
-    .then(result => {
-      dealDeck(result);
-    })
-    .then( result =>{
-      res.send(result);
-    })
-    .catch(err => (err));
+  assignFaceCards()
+    .then(res.send(cardFaces))
+    .catch(err => handleError(err));
 }
 
 
@@ -110,14 +111,21 @@ function dealDeck(id){
     });
 }
 
-//assigns all face cards. call getFaceImage for each suit within each iteration of the loop as promises oh god this is so ugly i'm so sorry. takes in nothing. returns nothing.
+//assigns all face cards. takes in nothing. returns nothing.
 function assignFaceCards(){
-  for(let i = 0; i < 3; i++){
-
-  }
+  cardFaces.forEach(face => {
+    for(let i = 0; i < 3; i++){
+      getFaceImage(face.endpoint, face.path)
+        .then(image => {
+          face.faceCards.push(image);
+          console.log(face.faceCards);
+        })
+        .catch(err => handleError(err));
+    }
+  });
 }
 
-//calls the image placeholder APIs. takes in the API path and a string (the respective api's name for the toplevel data structure holding the image url, or 0 if none) and returns an image.
+//calls the image placeholder APIs. takes in the API path and a string (the respective api's name for the toplevel data structure holding the image url, or 0 if none) and returns an image url.
 //TODO: code this.
 function getFaceImage(endpoint, path){
   return superagent.get(endpoint)
