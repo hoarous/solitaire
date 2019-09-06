@@ -19,17 +19,24 @@ https://deckofcardsapi.com/api/deck/<<deck_id>>/draw/?count=52 : will deal the d
 
 Deck of Cards API has its own built in card images, but for the purposes of this project we will be disregarding those and styling our own cards in css. We will also disregard its pile functionality, as it will be easier to manipulate game data if this is done on our own server.
 
-##RandomDuck
-https://random-d.uk/api/quack?type=jpg - returns a random duck image
+##Some Random API
+https://some-random-api.ml/img/birb : returns a random bird image
+https://some-random-api.ml/img/dog : returns a random dog image
+https://some-random-api.ml/img/cat : returns a random cat image
+https://some-random-api.ml/img/koala : returns a random koala image
 
-#RandomCat
-https://aws.random.cat/meow - returns a random cat image
+##Deprecated:
+###RandomDuck
+https://random-d.uk/api/quack?type=jpg : returns a random duck image
 
-#RandomDog
-https://random.dog/woof.json - returns a random dog image
+###RandomCat
+https://aws.random.cat/meow : returns a random cat image
 
-#RandomFox
-https://randomfox.ca/floof/ - returns a random fox image
+###RandomDog
+https://random.dog/woof.json : returns a random dog image
+
+###RandomFox
+https://randomfox.ca/floof/ : returns a random fox image
 
 #Database Schemas
 [sql schema](./assets/schema.sql)

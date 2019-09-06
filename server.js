@@ -33,21 +33,20 @@ app.get('*', sendError);
 
 //GLOBAL VARIABLES
 
-const cardFaces = [];
 
-function CardFace(name, endpoint, path){
+function CardFace(name, endpoint){
   this.endpoint = endpoint;
-  this.path = path;
   this.name = name;
   this.faceCards = [];
-  cardFaces.push(this);
+  // cardFaces.push(this);
 }
 
-
-new CardFace('HEARTS', `https://aws.random.cat/meow`, 'file');
-new CardFace('CLUBS', `https://random-d.uk/api/quack?type=jpg`, 'url');
-new CardFace('SPADES', `https://random.dog/woof.json `, 'url');
-new CardFace('DIAMONDS', `https://randomfox.ca/floof/ `, 'image');
+const cardFaces = {
+  hearts: new CardFace('HEARTS', `https://some-random-api.ml/img/cat`),
+  clubs: new CardFace('CLUBS', `https://some-random-api.ml/img/koala`),
+  spades: new CardFace('SPADES', `https://some-random-api.ml/img/birb`),
+  diamonds: new CardFace('DIAMONDS', `https://some-random-api.ml/img/dog`)
+}
 
 //TOPLEVEL FUNCTION CALLS: these are the functions called directly by express.
 
@@ -113,9 +112,9 @@ function dealDeck(id){
 
 //assigns all face cards. takes in nothing. returns nothing.
 function assignFaceCards(){
-  cardFaces.forEach(face => {
+  Object.values(cardFaces).forEach(face => {
     for(let i = 0; i < 3; i++){
-      getFaceImage(face.endpoint, face.path)
+      getFaceImage(face)
         .then(image => {
           face.faceCards.push(image);
           console.log(face.faceCards);
@@ -125,11 +124,10 @@ function assignFaceCards(){
   });
 }
 
-//calls the image placeholder APIs. takes in the API path and a string (the respective api's name for the toplevel data structure holding the image url, or 0 if none) and returns an image url.
-//TODO: code this.
-function getFaceImage(endpoint, path){
-  return superagent.get(endpoint)
-    .then(res => res.body[path]);
+//calls the image placeholder APIs. takes in the card face object and returns an image url.
+function getFaceImage(face){
+  return superagent.get(face.endpoint)
+    .then(res => res.body.link);
 }
 
 
