@@ -19,17 +19,17 @@ https://deckofcardsapi.com/api/deck/<<deck_id>>/draw/?count=52 : will deal the d
 
 Deck of Cards API has its own built in card images, but for the purposes of this project we will be disregarding those and styling our own cards in css. We will also disregard its pile functionality, as it will be easier to manipulate game data if this is done on our own server.
 
-##PlaceGoat
-https://placegoat.com/200/200 - returns a goat image of dimensions 200x200 (no json)
+##RandomDuck
+https://random-d.uk/api/quack?type=jpg - returns a random duck image
 
 #RandomCat
-https://aws.random.cat/meow - returns a random cat image encapsulated in a json.
+https://aws.random.cat/meow - returns a random cat image
 
 #RandomDog
-https://random.dog/woof.json - returns a random dog image encapsulated in a json.
+https://random.dog/woof.json - returns a random dog image
 
 #RandomFox
-https://randomfox.ca/floof/ - returns a random fox image encapsulated in a json.
+https://randomfox.ca/floof/ - returns a random fox image
 
 #Database Schemas
 [sql schema](./assets/schema.sql)
