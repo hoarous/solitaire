@@ -80,8 +80,8 @@ function sendError(req,res){
 // DELETE THIS BEFORE FINAL VERSION!!!!!!!
 // this is just for testing.
 function test(req,res){
-  assignFaceCards()
-    .then(res.send(cardFaces))
+  let promise = assignFaceCards();
+  promise.then(result => res.send(result))
     .catch(err => handleError(err));
 }
 
@@ -122,6 +122,7 @@ function assignFaceCards(){
         .catch(err => handleError(err));
     }
   });
+  return cardFaces;
 }
 
 //calls the image placeholder APIs. takes in the card face object and returns an image url.
