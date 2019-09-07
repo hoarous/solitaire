@@ -34,18 +34,19 @@ app.get('*', sendError);
 //GLOBAL VARIABLES
 
 
-function CardFace(name, endpoint){
+function Suit(name, endpoint){
   this.endpoint = endpoint;
   this.name = name;
+  this.foundation = new Foundation(name);
   this.faceCards = [];
-  // cardFaces.push(this);
+  // suits.push(this);
 }
 
-const cardFaces = {
-  hearts: new CardFace('HEARTS', `https://some-random-api.ml/img/cat`),
-  clubs: new CardFace('CLUBS', `https://some-random-api.ml/img/koala`),
-  spades: new CardFace('SPADES', `https://some-random-api.ml/img/birb`),
-  diamonds: new CardFace('DIAMONDS', `https://some-random-api.ml/img/dog`)
+const suits = {
+  hearts: new Suit('HEARTS', `https://some-random-api.ml/img/cat`),
+  clubs: new Suit('CLUBS', `https://some-random-api.ml/img/koala`),
+  spades: new Suit('SPADES', `https://some-random-api.ml/img/birb`),
+  diamonds: new Suit('DIAMONDS', `https://some-random-api.ml/img/dog`)
 }
 
 //TOPLEVEL FUNCTION CALLS: these are the functions called directly by express.
@@ -80,8 +81,8 @@ function sendError(req,res){
 // DELETE THIS BEFORE FINAL VERSION!!!!!!!
 // this is just for testing.
 function test(req,res){
-  let promise = assignFaceCards();
-  promise.then(result => res.send(result))
+  assignFaceCards()
+    .then(result => res.send(result))
     .catch(err => handleError(err));
 }
 
@@ -112,7 +113,7 @@ function dealDeck(id){
 
 //assigns all face cards. takes in nothing. returns nothing.
 function assignFaceCards(){
-  Object.values(cardFaces).forEach(face => {
+  Object.values(suits).forEach(face => {
     for(let i = 0; i < 3; i++){
       getFaceImage(face)
         .then(image => {
@@ -121,8 +122,7 @@ function assignFaceCards(){
         })
         .catch(err => handleError(err));
     }
-  });
-  return cardFaces;
+  })
 }
 
 //calls the image placeholder APIs. takes in the card face object and returns an image url.
@@ -133,12 +133,6 @@ function getFaceImage(face){
 
 
 //CONSTRUCTORS
-
-//object constructor for game state data. takes in a shuffled, dealt deck of cards and arranges it into appropriate respective wells and piles. FORMAT: array of cards.
-//TODO: make this thing!! determine what other sub-structures are required to make this as parsimonious as possible.
-function GameState(deck){
-  this.deck = deck;
-}
 
 //object constructor for a single card. takes in a card from Deck of Cards API, and processes it into a form useable by our app. API FORMAT:
 // {
@@ -155,11 +149,51 @@ function Card(data){
   else this.value = parseInt(data.value);
   this.red = (data.suit==='HEARTS'||data.suite==='DIAMONDS'); //this will make playing solitaire easier.
   this.suit = data.suit;
-  this.image = `./assets/images/${this.suit}.jpg`; //POPULATE THIS
+  this.image = data.image; //placeholder
 }
 
-// ERROR HANDLER
+//object constructor for game state data. takes in a shuffled, dealt deck of cards and arranges it into appropriate respective fans and stock.
+//TODO: make this thing!! determine what other sub-structures are required to make this as parsimonious as possible.
+function GameState(deck){
+  this.deck = deck;
+}
+
+//the goal of klondike solitaire is to place the cards into the foundations, in order from ace to king with aces low.
+function Foundation(suit){
+  this.value = 0;
+  this.suit = suit;
+  this.topCard = null;
+}
+
+//checks if a card is eligible to be placed in a foundation and places it if so. returns true on success, false on falure.
+Foundation.prototype.pushCard = function(card){
+  if(card.suit===this.suit&&card.value===this.value+1){
+    this.value++;
+    this.topCard = card;
+    return true;
+  } else return false;
+}
+
+// these are the staggered, starting piles of cards. Initially only one card is visible in each fan. Cards or stacks of cards can be placed onto fans if the previous lowest card is one greater value and opposite color to the top card that is being placed onto it. the constructor takes in the shuffled deck and the size of the fan to be built, and initializes the fan with the appropriate number of cards.
+function Fan(deck, size){
+  this.total = size;
+  this.visible = 1; //how many cards are actually visible.
+  this.cards = []; //array to hold the cards. index 0 is the bottommost card; index total is the topmost.
+  for (let i = 0; i < size; i++)this.cards.push(deck.pop());
+}
+
+//checks if a stack of cards is eligible to be placed onto a fan and places it if so. returns true on success, false on failure. takes in an array of cards.
+Fan.prototype.addCards = function(cards){
+  if(this.total===0||(cards[0].red!==this.cards[this.total-1].red&&cards[0].value==this.cards[this.total-1].value+1)){
+    this.total+=cards.length;
+    this.visible+=cards.length;
+    for(let i = 0; i<cards.length; i++){
+      this.cards.push(cards.shift());
+    }
+  }
+}
+
+// ERROR HANDLERS
 function handleError(err){
   console.log(`${err.response} error: ${err.message}`);
 }
-
