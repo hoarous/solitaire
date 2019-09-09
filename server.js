@@ -54,15 +54,17 @@ const suits = {
 //starts a new game
 //TODO: api call, initialize game
 function startGame(req,res){
-  getDeck()
+  assignFaceCards()
+    .then(result =>{
+      console.log(result);
+      return getDeck()
+    },handleError)
     .then(result => {
-      dealDeck(result);
-    })
-    .catch(err => handleError(err))
+      return dealDeck(result);
+    }, handleError)
     .then( result =>{
       res.send(new GameState(result));
-    })
-    .catch(err => handleError(err));
+    }, handleError);
 }
 
 //loads a saved game
@@ -71,6 +73,7 @@ function resumeGame(req,res){
   res.send(null);
 }
 
+//renders error page
 function sendError(req,res){
   res.render('pages/error.ejs')
 }
@@ -104,7 +107,7 @@ function getDeck(){
 //calls deck of cards API. takes in API ID of deck of cards and returns the entire deck, dealt, as an array of Cards.
 function dealDeck(id){
   let url = `https://deckofcardsapi.com/api/deck/${id}/draw/?count=52`;
-  superagent.get(url)
+  return superagent.get(url)
     .then(res =>{
       let shuffledDeck = res.body.cards.map(card => new Card(card));
       console.log(shuffledDeck);
@@ -135,7 +138,7 @@ function getFaceImage(suit){
 }
 
 
-//CONSTRUCTORS
+//CONSTRUCTORS AND DATA STRUCTURES
 
 //object constructor for a single card. takes in a card from Deck of Cards API, and processes it into a form useable by our app. API FORMAT:
 // {
