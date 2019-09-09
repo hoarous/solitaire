@@ -81,12 +81,13 @@ function sendError(req,res){
 // DELETE THIS BEFORE FINAL VERSION!!!!!!!
 // this is just for testing.
 function test(req,res){
-  assignFaceCards()
-    .then(result => res.send(result))
-    .catch(err => handleError(err));
+  let promise = assignFaceCards();
+  console.log(promise);
+  promise.then(result => {
+    console.log(result);
+    res.send(suits);
+  }, handleError);
 }
-
-
 
 //API CALLS & API HELPER FUNCTIONS
 
@@ -111,23 +112,25 @@ function dealDeck(id){
     });
 }
 
-//assigns all face cards. takes in nothing. returns nothing.
+//assigns all face cards. takes in nothing. returns promise.
 function assignFaceCards(){
-  Object.values(suits).forEach(face => {
+  let promises = [];
+  Object.values(suits).forEach( suit => {
     for(let i = 0; i < 3; i++){
-      getFaceImage(face)
+      promises.push(getFaceImage(suit)
         .then(image => {
-          face.faceCards.push(image);
-          console.log(face.faceCards);
-        })
-        .catch(err => handleError(err));
+          suit.faceCards.push(image);
+          console.log(suit.faceCards);
+        }, handleError));
     }
-  })
+  });
+  console.log(promises);
+  return Promise.all(promises);
 }
 
 //calls the image placeholder APIs. takes in the card face object and returns an image url.
-function getFaceImage(face){
-  return superagent.get(face.endpoint)
+function getFaceImage(suit){
+  return superagent.get(suit.endpoint)
     .then(res => res.body.link);
 }
 
@@ -142,14 +145,22 @@ function getFaceImage(face){
 //   "code": "8C"
 // }
 function Card(data){
-  if (data.value==='JACK')this.value = 11;
-  else if (data.value==='QUEEN')this.value = 12;
-  else if (data.value==='KING') this.value = 13;
-  else if (data.value==='ACE') this.value = 1;
+  this.image = data.image; //placeholder
+  if (data.value==='JACK'){
+    this.value = 11;
+  }
+  else if (data.value==='QUEEN'){
+    this.value = 12;
+  }
+  else if (data.value==='KING'){
+    this.value = 13;
+  }
+  else if (data.value==='ACE'){
+    this.value = 1;
+  }
   else this.value = parseInt(data.value);
   this.red = (data.suit==='HEARTS'||data.suite==='DIAMONDS'); //this will make playing solitaire easier.
   this.suit = data.suit;
-  this.image = data.image; //placeholder
 }
 
 //object constructor for game state data. takes in a shuffled, dealt deck of cards and arranges it into appropriate respective fans and stock.
@@ -176,9 +187,9 @@ Foundation.prototype.pushCard = function(card){
 
 // these are the staggered, starting piles of cards. Initially only one card is visible in each fan. Cards or stacks of cards can be placed onto fans if the previous lowest card is one greater value and opposite color to the top card that is being placed onto it. the constructor takes in the shuffled deck and the size of the fan to be built, and initializes the fan with the appropriate number of cards.
 function Fan(deck, size){
+  this.cards = []; //array to hold the cards. index 0 is the deepest card; index total is the shallowest.
   this.total = size;
-  this.visible = 1; //how many cards are actually visible.
-  this.cards = []; //array to hold the cards. index 0 is the bottommost card; index total is the topmost.
+  this.visible = 1; //how many cards are actually visible. therefore, total-visible is the index of the deepest visible card.
   for (let i = 0; i < size; i++)this.cards.push(deck.pop());
 }
 
@@ -190,6 +201,16 @@ Fan.prototype.addCards = function(cards){
     for(let i = 0; i<cards.length; i++){
       this.cards.push(cards.shift());
     }
+  }
+}
+
+//takes the number of cards to be removed and checks if allowed. returns null if ineligible, else the sub-array containing the removed stack of cards.
+Fan.prototype.removeCards = function(num){
+  if(num < this.visible)return null;
+  else{
+    this.visible -= num;
+    this.total -= num;
+    return this.cards.splice()
   }
 }
 
